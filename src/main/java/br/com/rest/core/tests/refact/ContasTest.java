@@ -1,41 +1,16 @@
 package br.com.rest.core.tests.refact;
 
 import br.com.rest.core.BaseTest;
-import io.restassured.RestAssured;
-import org.junit.BeforeClass;
+import br.com.rest.core.utils.FuncaoUtils;
 import org.junit.Test;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
 public class ContasTest extends BaseTest {
 
-    @BeforeClass
-    public static void setupLogin() {
-        Map<String, String> login = new HashMap<>();
-        login.put("email", "rodrigo@oliveira");
-        login.put("senha", "12345");
-
-        String TOKEN = given()
-                .body(login)
-                .when()
-                .post("/signin")
-                .then()
-                .statusCode(200)
-                .extract().path("token")
-                ;
-
-        RestAssured.requestSpecification.header("Authorization", "JWT " + TOKEN);
-
-        //Resetará o banco
-        RestAssured.get("/reset").then().statusCode(200);
-    }
-
     @Test
-    public void t02_deveIncluirContaComSucesso() {
+    public void deveIncluirContaComSucesso() {
         given()
                 .body("{\"nome\": \"Conta Inserida\"}")
         .when()
@@ -47,7 +22,7 @@ public class ContasTest extends BaseTest {
 
     @Test
     public void deveAlterarContaComSucesso() {
-        Integer CONTA_ID = getIdContaPeloNome("Conta para alterar");
+        Integer CONTA_ID = FuncaoUtils.getIdContaPeloNome("Conta para alterar");
 
         given()
                 .body("{\"nome\": \"Conta alterada\"}")
@@ -70,9 +45,5 @@ public class ContasTest extends BaseTest {
                 .statusCode(400)
                 .body("error", is("Já existe uma conta com esse nome!"))
         ;
-    }
-
-    public Integer getIdContaPeloNome(String nome) {
-        return RestAssured.get("/contas?nome="+nome).then().extract().path("id[0]");
     }
 }
